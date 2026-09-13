@@ -1,0 +1,1880 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المساعد الدراسي الذكي - Study Hub</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b2926">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Study Hub">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="icon" href="icon-192.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #061a18;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .app-container {
+            width: 980px;
+            max-width: 100%;
+            background-color: #0b2926;
+            border: 2px solid #10b981;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 30px rgba(16, 185, 129, 0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(to right, #047857, #0ea5e9);
+            padding: 18px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 2px solid #38bdf8;
+            color: #ffffff;
+        }
+        .section-content {
+            padding: 25px;
+            min-height: 430px;
+            max-height: 520px;
+            overflow-y: auto;
+            background-color: #0b2926;
+        }
+        .pane {
+            display: none;
+        }
+        .pane.active {
+            display: block;
+        }
+
+        /* ===== الواجهة الرئيسية (Home Grid) ===== */
+        .home-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            padding: 22px;
+            background-color: #0b2926;
+            direction: ltr;
+        }
+        @media (max-width: 640px) {
+            .home-grid { grid-template-columns: 1fr; }
+        }
+        .menu-card {
+            position: relative;
+            direction: rtl;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border-radius: 22px;
+            padding: 16px 18px;
+            min-height: 130px;
+            cursor: pointer;
+            overflow: hidden;
+            border: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .menu-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+        }
+        .menu-card .blob {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.16);
+            bottom: -50px;
+            left: -30px;
+            pointer-events: none;
+        }
+        .menu-card .card-text {
+            position: relative;
+            z-index: 2;
+            text-align: right;
+        }
+        .menu-card .card-text h3 {
+            color: #16213e;
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .menu-card .card-underline {
+            width: 55px;
+            height: 5px;
+            border-radius: 3px;
+            margin-right: 0;
+            margin-left: auto;
+        }
+        .menu-card .card-icon {
+            position: relative;
+            z-index: 2;
+            width: 78px;
+            height: 78px;
+            flex-shrink: 0;
+        }
+        .menu-card .card-icon svg { width: 100%; height: 100%; display: block; }
+
+        .card-c1  { background: #c9c2f0; }
+        .card-c1  .card-underline { background: #6c5ce7; }
+        .card-c2  { background: #bcdff5; }
+        .card-c2  .card-underline { background: #2f80ed; }
+        .card-c3  { background: #fbdca3; }
+        .card-c3  .card-underline { background: #e0902f; }
+        .card-c4  { background: #bdeed0; }
+        .card-c4  .card-underline { background: #23a35a; }
+        .card-c5  { background: #f8c9c9; }
+        .card-c5  .card-underline { background: #8a3b3b; }
+        .card-c6  { background: #d8d2f6; }
+        .card-c6  .card-underline { background: #7c5cf0; }
+        .card-c7  { background: #bdeef1; }
+        .card-c7  .card-underline { background: #159bab; }
+        .card-c8  { background: #fbe3a9; }
+        .card-c8  .card-underline { background: #f0a83a; }
+        .card-c9  { background: #f6c9e1; }
+        .card-c9  .card-underline { background: #d6409f; }
+        .card-c10 { background: #fbd3bd; }
+        .card-c10 .card-underline { background: #f4845f; }
+
+        /* ===== شاشة القسم المفتوح ===== */
+        .section-view { display: none; }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background-color: #061a18;
+            color: #38bdf8;
+            border: 1px solid #10b981;
+            padding: 10px 16px;
+            margin: 14px 20px 0 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        .back-btn:hover { background-color: #0b2926; }
+        h3 {
+            color: #38bdf8;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+        p {
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .hint-note {
+            color: #f59e0b;
+            font-size: 12px;
+            margin-top: -8px;
+            margin-bottom: 15px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #061a18;
+            border: 1px solid #10b981;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .btn-action {
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-action:hover {
+            background-color: #0284c7;
+        }
+        .btn-action:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .btn-success {
+            background-color: #10b981;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        .btn-danger-sm {
+            background-color: #ef4444;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-danger-sm:hover {
+            background-color: #dc2626;
+        }
+        .btn-danger {
+            background-color: #ef4444;
+        }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        .result-box {
+            background-color: #061a18;
+            border: 1px solid #38bdf8;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #e2e8f0;
+            line-height: 1.6;
+        }
+        .word-bank {
+            background: #042f2e;
+            border: 2px dashed #38bdf8;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .word-chip {
+            background: #0ea5e9;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .question-row {
+            background: #071f1d;
+            border: 1px solid #10b981;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #061a18;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #10b981;
+        }
+        .task-item.completed span {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+        .footer {
+            background-color: #061a18;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #10b981;
+            border-top: 1px solid #10b981;
+        }
+
+        /* ===== جدول اليوم ===== */
+        .day-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .day-tab-btn {
+            background-color: #061a18;
+            color: #cbd5e1;
+            border: 1px solid #10b981;
+            padding: 8px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            transition: background 0.2s, color 0.2s;
+        }
+        .day-tab-btn:hover {
+            background-color: #0b2926;
+        }
+        .day-tab-btn.active {
+            background-color: #10b981;
+            color: #06211e;
+            border-color: #10b981;
+        }
+        .today-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .nav-btn {
+            flex: 1;
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 14px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .nav-btn:hover {
+            background-color: #0284c7;
+        }
+        .current-day-badge {
+            text-align: center;
+            background: linear-gradient(to right, #047857, #0ea5e9);
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .schedule-list {
+            padding: 0;
+        }
+        .schedule-list ol {
+            list-style: none;
+            counter-reset: subject-counter;
+        }
+        .schedule-subject-row {
+            counter-increment: subject-counter;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #061a18;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .schedule-subject-row::before {
+            content: counter(subject-counter);
+            background: #10b981;
+            color: #06211e;
+            font-weight: bold;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+        }
+        .subject-edit-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .subject-edit-row input {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        .btn-icon-sm {
+            background-color: #061a18;
+            border: 1px solid #10b981;
+            color: #cbd5e1;
+            width: 30px;
+            height: 34px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-icon-sm:hover {
+            background-color: #0b2926;
+        }
+        .empty-day-msg {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        /* ===== حركة ضغط الأزرار (لطيفة وسريعة، على الزر نفسه فقط) ===== */
+        button {
+            transition: transform 0.12s ease;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .menu-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .menu-card:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== إعدادات التطبيق (زر الترس + اللوحة) ===== */
+        .header {
+            position: relative;
+        }
+        .settings-gear-btn {
+            position: absolute;
+            top: 50%;
+            left: 14px;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: #ffffff;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .settings-gear-btn:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+        .settings-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-overlay.active {
+            display: flex;
+        }
+        .settings-panel {
+            background-color: #0b2926;
+            border: 2px solid #10b981;
+            border-radius: 12px;
+            padding: 22px;
+            width: 320px;
+            max-width: 90vw;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.35);
+        }
+        .settings-panel h4 {
+            color: #38bdf8;
+            margin-bottom: 16px;
+            font-size: 16px;
+        }
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #061a18;
+            border: 1px solid #10b981;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .settings-row input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #10b981;
+            cursor: pointer;
+        }
+        .settings-close-btn {
+            width: 100%;
+            margin-top: 6px;
+        }
+        .install-btn {
+            display: none;
+            width: 100%;
+            background-color: #7c3aed;
+            margin-top: 4px;
+        }
+        .install-btn:hover {
+            background-color: #6d28d9;
+        }
+        .install-btn.visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        🌿 المساعد الدراسي الذكي - Study Hub
+        <button class="settings-gear-btn" onclick="openSettingsPanel()" title="الإعدادات">⚙️</button>
+    </div>
+
+    <div class="settings-overlay" id="settingsOverlay" onclick="if(event.target===this) closeSettingsPanel();">
+        <div class="settings-panel">
+            <h4>⚙️ الإعدادات</h4>
+            <div class="settings-row">
+                <span>🔊 أصوات التفاعل</span>
+                <input type="checkbox" id="soundToggleCheckbox" onchange="toggleSoundSetting()">
+            </div>
+            <button id="pwaInstallBtn" class="btn-action install-btn" onclick="triggerPwaInstall()">📲 تثبيت التطبيق على الهاتف</button>
+            <button class="btn-action settings-close-btn" onclick="closeSettingsPanel()">إغلاق</button>
+        </div>
+    </div>
+
+    <!-- الواجهة الرئيسية -->
+    <div id="homeGrid" class="home-grid">
+
+        <div class="menu-card card-c1" onclick="openSection(0)">
+            <div class="card-text"><h3>مخطط الجلسات</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="10" y="10" width="12" height="18" rx="4" fill="#6c5ce7"/>
+                <rect x="78" y="10" width="12" height="18" rx="4" fill="#6c5ce7"/>
+                <rect x="8" y="18" width="84" height="72" rx="12" fill="#ffffff"/>
+                <rect x="8" y="18" width="84" height="20" rx="10" fill="#a599ec"/>
+                <g fill="#6c5ce7">
+                    <rect x="20" y="48" width="14" height="14" rx="3"/>
+                    <rect x="43" y="48" width="14" height="14" rx="3"/>
+                    <rect x="66" y="48" width="14" height="14" rx="3"/>
+                    <rect x="20" y="68" width="14" height="14" rx="3"/>
+                    <rect x="43" y="68" width="14" height="14" rx="3"/>
+                </g>
+                <circle cx="78" cy="80" r="16" fill="#6c5ce7"/>
+                <path d="M70 80 l5 6 l12 -14" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c2" onclick="openSection(1)">
+            <div class="card-text"><h3>البطاقات التعليمية</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="18" y="30" width="55" height="45" rx="8" fill="#2f80ed" transform="rotate(-8 45 52)"/>
+                <rect x="24" y="24" width="55" height="45" rx="8" fill="#f2a93b" transform="rotate(-2 51 46)"/>
+                <rect x="28" y="20" width="55" height="45" rx="8" fill="#ffffff"/>
+                <circle cx="55" cy="38" r="10" fill="none" stroke="#2f80ed" stroke-width="4"/>
+                <line x1="55" y1="48" x2="55" y2="54" stroke="#2f80ed" stroke-width="4" stroke-linecap="round"/>
+                <line x1="49" y1="54" x2="61" y2="54" stroke="#2f80ed" stroke-width="4" stroke-linecap="round"/>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c3" onclick="openSection(2)">
+            <div class="card-text"><h3>بنك الاسئلة</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="14" y="10" width="60" height="80" rx="10" fill="#ffffff"/>
+                <g fill="#e0902f">
+                    <rect x="24" y="24" width="12" height="12" rx="3"/>
+                    <rect x="24" y="44" width="12" height="12" rx="3"/>
+                    <rect x="24" y="64" width="12" height="12" rx="3"/>
+                </g>
+                <g stroke="#cbd5e1" stroke-width="4" stroke-linecap="round">
+                    <line x1="42" y1="30" x2="64" y2="30"/>
+                    <line x1="42" y1="50" x2="64" y2="50"/>
+                    <line x1="42" y1="70" x2="64" y2="70"/>
+                </g>
+                <g transform="translate(58,58) rotate(45)">
+                    <rect x="0" y="0" width="12" height="38" rx="3" fill="#f2a93b"/>
+                    <polygon points="0,38 12,38 6,50" fill="#7a4a12"/>
+                </g>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c4" onclick="openSection(3)">
+            <div class="card-text"><h3>متتبع الواجبات</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="16" y="16" width="60" height="76" rx="10" fill="#1f9d55"/>
+                <rect x="24" y="26" width="44" height="56" rx="6" fill="#ffffff"/>
+                <rect x="36" y="10" width="20" height="12" rx="4" fill="#0f6a38"/>
+                <g stroke="#1f9d55" stroke-width="4" stroke-linecap="round">
+                    <line x1="32" y1="42" x2="60" y2="42"/>
+                    <line x1="32" y1="56" x2="60" y2="56"/>
+                    <line x1="32" y1="70" x2="52" y2="70"/>
+                </g>
+                <circle cx="76" cy="78" r="18" fill="#0b2338"/>
+                <circle cx="76" cy="78" r="14" fill="#ffffff"/>
+                <line x1="76" y1="78" x2="76" y2="68" stroke="#0b2338" stroke-width="3" stroke-linecap="round"/>
+                <line x1="76" y1="78" x2="83" y2="80" stroke="#0b2338" stroke-width="3" stroke-linecap="round"/>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c5" onclick="openSection(4)">
+            <div class="card-text"><h3>حافضة القوانين</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="18" y="12" width="58" height="76" rx="6" fill="#6b2b3a"/>
+                <rect x="70" y="12" width="8" height="76" fill="#8a3b3b"/>
+                <path d="M18 82 l0 10 l14 -6 z" fill="#d4af37"/>
+                <g stroke="#d4af37" stroke-width="4" stroke-linecap="round">
+                    <line x1="47" y1="28" x2="47" y2="58"/>
+                    <line x1="32" y1="34" x2="62" y2="34"/>
+                </g>
+                <path d="M32 34 l-8 16 a8 8 0 0 0 16 0 z" fill="none" stroke="#d4af37" stroke-width="3"/>
+                <path d="M62 34 l-8 16 a8 8 0 0 0 16 0 z" fill="none" stroke="#d4af37" stroke-width="3"/>
+                <rect x="38" y="58" width="18" height="6" rx="2" fill="#d4af37"/>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c6" onclick="openSection(5)">
+            <div class="card-text"><h3>سجل الاخطاء</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="20" y="10" width="56" height="76" rx="8" fill="#ffffff"/>
+                <g stroke="#cbd5e1" stroke-width="4" stroke-linecap="round">
+                    <line x1="30" y1="26" x2="66" y2="26"/>
+                    <line x1="30" y1="38" x2="66" y2="38"/>
+                    <line x1="30" y1="50" x2="52" y2="50"/>
+                </g>
+                <circle cx="70" cy="72" r="20" fill="#e74c3c"/>
+                <g stroke="#ffffff" stroke-width="5" stroke-linecap="round">
+                    <line x1="62" y1="64" x2="78" y2="80"/>
+                    <line x1="78" y1="64" x2="62" y2="80"/>
+                </g>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c7" onclick="openSection(6)">
+            <div class="card-text"><h3>الاسقاطات</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <g fill="#159bab">
+                    <rect x="14" y="62" width="14" height="26" rx="3"/>
+                    <rect x="34" y="50" width="14" height="38" rx="3"/>
+                    <rect x="54" y="36" width="14" height="52" rx="3"/>
+                    <rect x="74" y="22" width="14" height="66" rx="3"/>
+                </g>
+                <path d="M16 46 L48 26 L60 34 L88 12" stroke="#0d7583" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                <polygon points="88,12 76,14 86,22" fill="#0d7583"/>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c8" onclick="openSection(7)">
+            <div class="card-text"><h3>المهام اليومية</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="16" y="14" width="60" height="76" rx="10" fill="#ffffff"/>
+                <rect x="26" y="28" width="12" height="12" rx="3" fill="#23a35a"/>
+                <path d="M28 34 l3 3 l6 -7" stroke="#fff" stroke-width="2.5" fill="none"/>
+                <rect x="26" y="48" width="12" height="12" rx="3" fill="#23a35a"/>
+                <path d="M28 54 l3 3 l6 -7" stroke="#fff" stroke-width="2.5" fill="none"/>
+                <rect x="26" y="68" width="12" height="12" rx="3" fill="none" stroke="#f0a83a" stroke-width="3"/>
+                <g stroke="#cbd5e1" stroke-width="4" stroke-linecap="round">
+                    <line x1="44" y1="34" x2="64" y2="34"/>
+                    <line x1="44" y1="54" x2="64" y2="54"/>
+                    <line x1="44" y1="74" x2="60" y2="74"/>
+                </g>
+                <circle cx="80" cy="20" r="10" fill="#f0a83a"/>
+                <g stroke="#f0a83a" stroke-width="3" stroke-linecap="round">
+                    <line x1="80" y1="4" x2="80" y2="8"/>
+                    <line x1="80" y1="32" x2="80" y2="36"/>
+                    <line x1="64" y1="20" x2="68" y2="20"/>
+                    <line x1="92" y1="20" x2="96" y2="20"/>
+                </g>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c9" onclick="openSection(8)">
+            <div class="card-text"><h3>بنك المصطلحات</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="18" y="12" width="58" height="76" rx="6" fill="#7c3aed"/>
+                <rect x="70" y="12" width="8" height="76" fill="#f2994a"/>
+                <path d="M18 82 l0 10 l14 -6 z" fill="#f2994a"/>
+                <text x="47" y="58" font-size="26" font-weight="bold" fill="#ffffff" text-anchor="middle" font-family="Arial, sans-serif">A-Z</text>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+        <div class="menu-card card-c10" onclick="openTodaySchedule()">
+            <div class="card-text"><h3>جدول اليوم</h3><div class="card-underline"></div></div>
+            <div class="card-icon"><svg viewBox="0 0 100 100">
+                <rect x="12" y="10" width="12" height="18" rx="4" fill="#f4845f"/>
+                <rect x="76" y="10" width="12" height="18" rx="4" fill="#f4845f"/>
+                <rect x="10" y="18" width="80" height="72" rx="12" fill="#ffffff"/>
+                <rect x="10" y="18" width="80" height="20" rx="10" fill="#f7a583"/>
+                <text x="50" y="34" font-size="12" font-weight="bold" fill="#7a3419" text-anchor="middle" font-family="Arial, sans-serif">TODAY</text>
+                <g fill="#f4845f">
+                    <rect x="22" y="48" width="56" height="9" rx="4"/>
+                    <rect x="22" y="63" width="56" height="9" rx="4"/>
+                    <rect x="22" y="78" width="34" height="9" rx="4"/>
+                </g>
+            </svg></div>
+            <div class="blob"></div>
+        </div>
+
+    </div>
+
+    <!-- شاشة القسم المفتوح -->
+    <div id="sectionView" class="section-view">
+        <button class="back-btn" onclick="goHome()">🏠 الرئيسية</button>
+
+    <div class="section-content">
+
+        <!-- 1. مخطط الجلسات -->
+        <div class="pane active">
+            <h3>مخطط الجلسات الذكي حسب الفصول والمواضيع</h3>
+            <p>حدد عدد الفصول، وكم موضوع في كل فصل، والأيام المتبقية ليقسّمها لك يوماً بيوم:</p>
+            <input type="text" id="subName" class="form-control" placeholder="اسم المادة (مثال: رياضيات)">
+            <input type="number" id="subDays" class="form-control" placeholder="عدد الأيام المتبقية للامتحان (مثلاً: 3)">
+            <input type="number" id="numChapters" class="form-control" placeholder="عدد الفصول الباقية (مثلاً: 1)">
+            <input type="number" id="topicsPerChapter" class="form-control" placeholder="كم موضوع في الفصل الواحد؟ (مثلاً: 5)">
+
+            <button class="btn-action btn-success" onclick="generatePlan()">إنشاء الجدول اليومي الذكي</button>
+            <div id="planResult" class="result-box" style="display:none;"></div>
+        </div>
+
+        <!-- 2. البطاقات التعليمية -->
+        <div class="pane">
+            <h3>البطاقات التعليمية التفاعلية (سحب عشوائي)</h3>
+            <p>أضف أسئلتك وإجاباتك الخاصة لكي يقوم التطبيق بسحبها عشوائياً:</p>
+            <input type="text" id="fcQuestion" class="form-control" placeholder="اكتب السؤال هنا">
+            <input type="text" id="fcAnswer" class="form-control" placeholder="اكتب الإجابة هنا">
+            <button class="btn-action" onclick="addFlashcard()">إضافة البطاقة للبنك</button>
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <div id="flashcardArea" class="result-box" style="text-align: center; padding: 25px; font-size: 15px; cursor: pointer; border-color:#38bdf8;" onclick="flipCustomCard()">
+                اضغط على زر "اسحب سؤال عشوائي" للبدء!
+            </div>
+            <button class="btn-action btn-success" style="margin-top: 10px;" onclick="getRandomCard()">اسحب سؤال عشوائي 🎲</button>
+            <button id="deleteFlashcardBtn" class="btn-action btn-danger" style="margin-top: 10px; display:none;" onclick="deleteCurrentFlashcard()">🗑️ حذف هذا السؤال</button>
+        </div>
+
+        <!-- 3. بنك الأسئلة الشخصي -->
+        <div class="pane">
+            <h3>بنك الأسئلة الشخصي والتحدي العشوائي</h3>
+            <p>أضف أسئلتك وخياراتك، وسيقوم التطبيق بتوزيع الخيار الصحيح عشوائياً:</p>
+            <input type="text" id="qText" class="form-control" placeholder="نص السؤال">
+            <input type="text" id="qOpt1" class="form-control" placeholder="الخيار الصحيح">
+            <input type="text" id="qOpt2" class="form-control" placeholder="خيار خاطئ 1">
+            <input type="text" id="qOpt3" class="form-control" placeholder="خيار خاطئ 2">
+            <button class="btn-action" onclick="addCustomQuiz()">احفظ السؤال في البنك</button>
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <div id="quizArea" class="result-box">
+                أضف أسئلتك بالأعلى ثم اضغط لاختبارك عشوائياً.
+            </div>
+            <button class="btn-action btn-success" style="margin-top: 10px;" onclick="getRandomQuiz()">ابدأ اختبار عشوائي 🎯</button>
+            <button id="deleteQuizBtn" class="btn-action btn-danger" style="margin-top: 10px; display:none;" onclick="deleteCurrentQuiz()">🗑️ حذف هذا السؤال</button>
+        </div>
+
+        <!-- 4. متتبع الواجبات -->
+        <div class="pane">
+            <h3>متتبع الواجبات والمواعيد النهائية</h3>
+            <p>سجل واجبك وتاريخ تسليمه ليظهر لك فوراً كم يوم بقي عليه:</p>
+            <input type="text" id="taskName" class="form-control" placeholder="اسم الواجب أو المشروع">
+            <input type="date" id="taskDate" class="form-control">
+            <button class="btn-action btn-success" onclick="addTask()">إضافة الواجب</button>
+            <div id="taskList" class="result-box">جاري التحميل...</div>
+        </div>
+
+        <!-- 5. القوانين والمعادلات -->
+        <div class="pane">
+            <h3>مرجع القوانين والمعادلات المخصص</h3>
+            <p>أدخل القانون، وحدد متى يأتي بالامتحان، وضع علامة إذا كان القانون مهماً جداً:</p>
+            <input type="text" id="formName" class="form-control" placeholder="اسم القانون أو المعادلة">
+            <input type="text" id="formWhen" class="form-control" placeholder="شوكت يجي هذا القانون بالامتحان؟">
+
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; cursor: pointer; color: #f87171; font-weight: bold;">
+                <input type="checkbox" id="formImportant" style="width: 18px; height: 18px; accent-color: #ef4444;">
+                ⚠️ هذا القانون مهم جداً (تمييز باللون الأحمر)
+            </label>
+
+            <button class="btn-action" onclick="addFormula()">حفظ القانون في المرجع</button>
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <div id="formulaList" class="result-box">جاري التحميل...</div>
+        </div>
+
+        <!-- 6. سجل الأخطاء المتكررة -->
+        <div class="pane">
+            <h3>سجل الأخطاء المتكررة (مراجعة ليلة الامتحان)</h3>
+            <p>سجل الأفكار أو الأسئلة التي تخطئ بها دائماً لكي تراجعها بتركيز عالٍ:</p>
+            <input type="text" id="errSubject" class="form-control" placeholder="اسم المادة (مثال: كيمياء)">
+            <input type="text" id="errDesc" class="form-control" placeholder="ما هو الخطأ أو الفكرة التي تخطئ بها؟">
+            <button class="btn-action btn-success" onclick="addErrorItem()">إضافة إلى سجل الأخطاء</button>
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <div id="errorList" class="result-box">جاري التحميل...</div>
+        </div>
+
+        <!-- 7. تمارين الإسقاطات الوزارية -->
+        <div class="pane">
+            <h3>إنشاء واختبار تمارين الإسقاطات الوزارية</h3>
+            <p>أنشئ تمريناً شاملاً مع الكلمات المفتاحية واختبر نفسك فوراً:</p>
+
+            <input type="text" id="examTitle" class="form-control" placeholder="اسم التمرين (مثال: إسقاطات الوحدة الأولى)">
+
+            <div id="questionsContainer">
+                <div class="question-row">
+                    <p style="color:#38bdf8; font-weight:bold; margin-bottom:8px;">السؤال 1:</p>
+                    <input type="text" class="form-control q-sentence" placeholder="الجملة مع الفراغ">
+                    <input type="text" class="form-control q-answer" placeholder="الكلمة الصحيحة للفراغ">
+                    <input type="text" class="form-control q-clue" placeholder="الكلمة المفتاحية أو الدليل">
+                </div>
+            </div>
+
+            <button class="btn-action" style="background-color: #3b82f6; margin-bottom: 12px;" onclick="addQuestionRow()">➕ إضافة خانة سؤال جديد (+)</button><br>
+            <button class="btn-action btn-success" onclick="saveCompleteExam()">💾 حفظ هذا التمرين</button>
+
+            <hr style="border-color:#10b981; margin: 20px 0;">
+            <h4 style="color:#38bdf8; font-size: 15px; margin-bottom: 10px;">📋 التمارين المحفوظة:</h4>
+            <div id="examsList" class="result-box">جاري التحميل...</div>
+            <div id="examActiveArea" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- 8. قائمة المهام اليومية -->
+        <div class="pane">
+            <h3>قائمة المهام اليومية السريعة (Daily Checklist)</h3>
+            <p>أضف الإنجازات والأهداف التي تريد إنجازها اليوم:</p>
+            <input type="text" id="dailyTaskInput" class="form-control" placeholder="ما الذي تريد إنجازه اليوم؟">
+            <button class="btn-action btn-success" onclick="addDailyTask()">إضافة إلى قائمة اليوم</button>
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <h4 style="color:#38bdf8; font-size: 14px; margin-bottom: 8px;">📋 مهامك اليومية:</h4>
+            <div id="dailyTaskList" class="result-box">جاري التحميل...</div>
+        </div>
+
+        <!-- 9. بنك المصطلحات والمعاني -->
+        <div class="pane">
+            <h3>📖 بنك المصطلحات والمفاهيم العلمية</h3>
+            <p>سجل الكلمات والمصطلحات الصعبة والمرادفات مع معانيها للرجوع إليها سريعاً والبحث فيها:</p>
+
+            <input type="text" id="termSubject" class="form-control" placeholder="اسم المادة (مثال: إنجليزي / أحياء)">
+            <input type="text" id="termWord" class="form-control" placeholder="المصطلح أو الكلمة (مثال: Photosynthesis)">
+            <input type="text" id="termMeaning" class="form-control" placeholder="المعنى أو التوضيح (مثال: البناء الضوئي)">
+            <button class="btn-action btn-success" onclick="addTerm()">حفظ المصطلح في البنك</button>
+
+            <hr style="border-color:#10b981; margin: 15px 0;">
+            <input type="text" id="searchTermInput" class="form-control" placeholder="🔍 ابحث عن أي مصطلح أو كلمة..." oninput="renderTerms()">
+            <div id="termsList" class="result-box">جاري التحميل...</div>
+        </div>
+
+        <!-- 10. جدول اليوم -->
+        <div class="pane">
+            <h3>📅 جدول اليوم</h3>
+
+            <!-- وضع العرض -->
+            <div id="scheduleViewMode">
+                <div class="day-tabs" id="dayTabs"></div>
+                <div class="current-day-badge" id="currentDayBadge"></div>
+                <div class="today-nav">
+                    <button class="nav-btn" onclick="navigateScheduleDay(1)">التالي ◀</button>
+                    <button class="nav-btn" onclick="navigateScheduleDay(-1)">▶ السابق</button>
+                </div>
+                <div id="todayScheduleList" class="result-box schedule-list"></div>
+                <button class="btn-action" style="width:100%; margin-top:10px;" onclick="enterScheduleEditMode()">✏️ تعديل الجدول</button>
+                <p class="hint-note" style="margin-top:12px;">🔔 لتفعيل تذكير الساعة 5:00 مساءً بجدول الغد، اضغط الزر بالأسفل واسمح بالإشعارات (يجب أن يبقى المتصفح مفتوحاً ليعمل التذكير).</p>
+                <button class="btn-action" style="background-color:#7c3aed; width:100%;" onclick="enableScheduleNotifications()">🔔 تفعيل تذكير جدول الغد</button>
+            </div>
+
+            <!-- وضع التعديل -->
+            <div id="scheduleEditMode" style="display:none;">
+                <p>اختر اليوم لإضافة أو تعديل حصصه، ثم اضغط "تم" عند الانتهاء:</p>
+                <div class="day-tabs" id="editDayTabs"></div>
+                <div id="editDayContent"></div>
+                <button class="btn-action btn-success" style="width:100%; margin-top:10px;" onclick="finishScheduleEdit()">✅ تم</button>
+            </div>
+        </div>
+
+    </div>
+    </div>
+    <!-- End sectionView -->
+
+    <div class="footer">
+        بياناتك الدراسية محفوظة تلقائياً 💾✨
+    </div>
+</div>
+
+<script>
+    let currentSectionIndex = null; // null = الشاشة الرئيسية
+
+    function openSection(index) {
+        let panes = document.querySelectorAll('.pane');
+        panes.forEach(p => p.classList.remove('active'));
+        panes[index].classList.add('active');
+        document.getElementById('homeGrid').style.display = 'none';
+        document.getElementById('sectionView').style.display = 'block';
+        window.scrollTo(0, 0);
+        currentSectionIndex = index;
+        saveLastAppState();
+    }
+
+    function goHome() {
+        document.getElementById('sectionView').style.display = 'none';
+        document.getElementById('homeGrid').style.display = 'grid';
+        window.scrollTo(0, 0);
+        currentSectionIndex = null;
+        saveLastAppState();
+    }
+
+    // ===== حفظ واستعادة آخر حالة وصل إليها المستخدم =====
+    function saveLastAppState() {
+        try {
+            let state = {
+                section: currentSectionIndex,
+                scheduleDayIndex: (typeof scheduleViewDayIndex === 'number') ? scheduleViewDayIndex : 0
+            };
+            localStorage.setItem('studyhub:lastState', JSON.stringify(state));
+        } catch (e) { /* تجاهل أي خطأ تخزين */ }
+    }
+
+    function restoreLastAppState() {
+        try {
+            let raw = localStorage.getItem('studyhub:lastState');
+            if (!raw) return;
+            let state = JSON.parse(raw);
+            if (typeof state.scheduleDayIndex === 'number' && state.scheduleDayIndex >= 0 && state.scheduleDayIndex < SCHEDULE_DAYS.length) {
+                scheduleViewDayIndex = state.scheduleDayIndex;
+            }
+            if (state.section === null || state.section === undefined) return; // بقي في الرئيسية
+
+            if (state.section === 9) {
+                // قسم جدول اليوم: يعود لنفس اليوم الذي كان يشاهده
+                openSection(9);
+                if (!scheduleHasAnyData()) {
+                    enterScheduleEditMode();
+                } else {
+                    renderScheduleView();
+                }
+            } else if (state.section >= 0 && state.section <= 8) {
+                openSection(state.section);
+            }
+        } catch (e) { /* تجاهل أي حالة محفوظة تالفة */ }
+    }
+
+    window.onload = async function() {
+        await Promise.all([
+            loadFlashcards(),
+            loadQuizzes(),
+            loadTasks(),
+            loadFormulas(),
+            loadErrors(),
+            loadExams(),
+            loadDailyTasks(),
+            loadTerms(),
+            loadTodaySchedule()
+        ]);
+        startScheduleNotificationWatcher();
+        loadSoundSetting();
+        restoreLastAppState();
+        registerServiceWorker();
+    };
+
+    // Helper: read a JSON array from persistent storage, defaulting to [] on any failure
+    async function readStoredArray(key) {
+        try {
+            const raw = localStorage.getItem(key);
+            if (raw) {
+                return JSON.parse(raw);
+            }
+            return [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    // Helper: write a JSON array to persistent storage
+    async function writeStoredArray(key, arr) {
+        try {
+            localStorage.setItem(key, JSON.stringify(arr));
+        } catch (e) {
+            console.error('Storage error while saving', key, e);
+        }
+    }
+
+    // Helper: escape text before injecting as HTML
+    function escapeHtml(str) {
+        let div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // ===== أصوات التفاعل (نقرة خفيفة وناعمة) =====
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function loadSoundSetting() {
+        let stored = localStorage.getItem('studyhub:soundEnabled');
+        soundEnabled = (stored === null) ? true : (stored === 'true');
+        let checkbox = document.getElementById('soundToggleCheckbox');
+        if (checkbox) checkbox.checked = soundEnabled;
+    }
+
+    function toggleSoundSetting() {
+        let checkbox = document.getElementById('soundToggleCheckbox');
+        soundEnabled = checkbox ? checkbox.checked : !soundEnabled;
+        localStorage.setItem('studyhub:soundEnabled', soundEnabled);
+        if (soundEnabled) playClickSound();
+    }
+
+    function playClickSound() {
+        if (!soundEnabled) return;
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 540;
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.05, audioCtx.currentTime + 0.008);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.09);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        } catch (e) { /* تجاهل أي خطأ صوت بصمت حتى لا يعطل التطبيق */ }
+    }
+
+    // نقرة خفيفة عند الضغط على أي زر أو بطاقة قائمة، دون الحاجة لتعديل كل زر يدوياً
+    document.addEventListener('click', function (e) {
+        let target = e.target.closest('button, .menu-card');
+        if (target) playClickSound();
+    }, true);
+
+    // ===== لوحة الإعدادات =====
+    function openSettingsPanel() {
+        document.getElementById('settingsOverlay').classList.add('active');
+        updatePwaInstallButtonVisibility();
+    }
+
+    function closeSettingsPanel() {
+        document.getElementById('settingsOverlay').classList.remove('active');
+    }
+
+    // ===== تثبيت التطبيق (PWA) =====
+    let deferredInstallPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        updatePwaInstallButtonVisibility();
+    });
+
+    window.addEventListener('appinstalled', function () {
+        deferredInstallPrompt = null;
+        updatePwaInstallButtonVisibility();
+    });
+
+    function updatePwaInstallButtonVisibility() {
+        let btn = document.getElementById('pwaInstallBtn');
+        if (!btn) return;
+        btn.classList.toggle('visible', !!deferredInstallPrompt);
+    }
+
+    async function triggerPwaInstall() {
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        await deferredInstallPrompt.userChoice;
+        deferredInstallPrompt = null;
+        updatePwaInstallButtonVisibility();
+    }
+
+    function registerServiceWorker() {
+        if (!('serviceWorker' in navigator)) return;
+        // يعمل فقط عند استضافة الملفات على خادم حقيقي (https أو localhost)، ويفشل بصمت غير ذلك
+        navigator.serviceWorker.register('sw.js').catch(function () { /* تجاهل بصمت */ });
+    }
+
+    // 1. مخطط الجلسات الذكي
+    function generatePlan() {
+        let name = document.getElementById('subName').value;
+        let days = parseInt(document.getElementById('subDays').value);
+        let chapters = parseInt(document.getElementById('numChapters').value);
+        let topicsPerChap = parseInt(document.getElementById('topicsPerChapter').value);
+        let res = document.getElementById('planResult');
+
+        if(!name || isNaN(days) || isNaN(chapters) || isNaN(topicsPerChap)) {
+            alert('الرجاء تعبئة جميع الحقول بأرقام صحيحة');
+            return;
+        }
+
+        if(days <= 0 || chapters <= 0 || topicsPerChap <= 0) {
+            alert('الرجاء إدخال أكبر من صفر');
+            return;
+        }
+
+        let totalTopics = chapters * topicsPerChap;
+        res.style.display = 'block';
+
+        let html = `📚 مادة <b>${name}</b>: ${chapters} فصل × ${topicsPerChap} مواضيع = <b>الإجمالي ${totalTopics} موضوع</b> موزعة على ${days} أيام:<br><br><b>📅 الجدول اليومي المقترح:</b><br><ul>`;
+
+        let baseTopicsPerDay = Math.floor(totalTopics / days);
+        let remainder = totalTopics % days;
+        let currentTopic = 1;
+
+        for(let d = 1; d <= days; d++) {
+            let topicsToday = baseTopicsPerDay + (d <= remainder ? 1 : 0);
+            if(topicsToday > 0) {
+                let endTopic = currentTopic + topicsToday - 1;
+                html += `<li style="margin-bottom: 6px;">• <b>اليوم ${d}:</b> ادرس <b>${topicsToday}</b> مواضيع (من الموضوع ${currentTopic} إلى ${endTopic})</li>`;
+                currentTopic = endTopic + 1;
+            } else {
+                html += `<li style="margin-bottom: 6px;">• <b>اليوم ${d}:</b> مراجعة عامة وراحة</li>`;
+            }
+        }
+        html += `</ul>`;
+        res.innerHTML = html;
+    }
+
+    // 2. البطاقات التعليمية
+    let myFlashcards = [];
+    let currentActiveCard = null;
+    let currentActiveCardIndex = -1;
+    let showAns = false;
+
+    async function loadFlashcards() {
+        myFlashcards = await readStoredArray('studyhub:flashcards');
+    }
+
+    async function addFlashcard() {
+        let q = document.getElementById('fcQuestion').value;
+        let a = document.getElementById('fcAnswer').value;
+        if(!q || !a) { alert('أدخل السؤال والإجابة'); return; }
+        myFlashcards.push({q, a});
+        await writeStoredArray('studyhub:flashcards', myFlashcards);
+        document.getElementById('fcQuestion').value = '';
+        document.getElementById('fcAnswer').value = '';
+        alert('تمت إضافة البطاقة بنجاح!');
+    }
+
+    function getRandomCard() {
+        if(myFlashcards.length === 0) {
+            document.getElementById('flashcardArea').innerHTML = '⚠️ لم تقم بإضافة أي بطاقات بعد!';
+            document.getElementById('deleteFlashcardBtn').style.display = 'none';
+            currentActiveCard = null;
+            currentActiveCardIndex = -1;
+            return;
+        }
+        let randomIndex = Math.floor(Math.random() * myFlashcards.length);
+        currentActiveCard = myFlashcards[randomIndex];
+        currentActiveCardIndex = randomIndex;
+        showAns = false;
+        document.getElementById('flashcardArea').innerHTML = `<b>سؤال عشوائي:</b> ${currentActiveCard.q} <br><span style="color:#38bdf8; font-size:12px;">(انقر هنا لرؤية الإجابة)</span>`;
+        document.getElementById('deleteFlashcardBtn').style.display = 'block';
+    }
+
+    async function deleteCurrentFlashcard() {
+        if(currentActiveCardIndex === -1) return;
+        myFlashcards.splice(currentActiveCardIndex, 1);
+        await writeStoredArray('studyhub:flashcards', myFlashcards);
+        currentActiveCard = null;
+        currentActiveCardIndex = -1;
+        document.getElementById('flashcardArea').innerHTML = 'اضغط على زر "اسحب سؤال عشوائي" للبدء!';
+        document.getElementById('deleteFlashcardBtn').style.display = 'none';
+    }
+
+    function flipCustomCard() {
+        if(!currentActiveCard) return;
+        let area = document.getElementById('flashcardArea');
+        if(!showAns) {
+            area.innerHTML = `<b>الإجابة:</b> ${currentActiveCard.a} <br><span style="color:#10b981; font-size:12px;">(انقر للعودة للسؤال)</span>`;
+            showAns = true;
+        } else {
+            area.innerHTML = `<b>سؤال عشوائي:</b> ${currentActiveCard.q} <br><span style="color:#38bdf8; font-size:12px;">(انقر هنا لرؤية الإجابة)</span>`;
+            showAns = false;
+        }
+    }
+
+    // 3. بنك الأسئلة الشخصي
+    let myQuizzes = [];
+    let currentQuizIndex = -1;
+
+    async function loadQuizzes() {
+        myQuizzes = await readStoredArray('studyhub:quizzes');
+    }
+
+    async function addCustomQuiz() {
+        let text = document.getElementById('qText').value;
+        let opt1 = document.getElementById('qOpt1').value;
+        let opt2 = document.getElementById('qOpt2').value;
+        let opt3 = document.getElementById('qOpt3').value;
+        if(!text || !opt1) { alert('أدخل السؤال والخيار الصحيح على الأقل'); return; }
+        myQuizzes.push({text, correct: opt1, wrongs: [opt2, opt3].filter(Boolean)});
+        await writeStoredArray('studyhub:quizzes', myQuizzes);
+        document.getElementById('qText').value = '';
+        document.getElementById('qOpt1').value = '';
+        document.getElementById('qOpt2').value = '';
+        document.getElementById('qOpt3').value = '';
+        alert('تم حفظ السؤال بنجاح!');
+    }
+
+    function getRandomQuiz() {
+        let area = document.getElementById('quizArea');
+        if(myQuizzes.length === 0) {
+            area.innerHTML = '⚠️ لا توجد أسئلة مسجلة في البنك.';
+            document.getElementById('deleteQuizBtn').style.display = 'none';
+            currentQuizIndex = -1;
+            return;
+        }
+        let randomIndex = Math.floor(Math.random() * myQuizzes.length);
+        let q = myQuizzes[randomIndex];
+        currentQuizIndex = randomIndex;
+        let allOptions = [q.correct, ...q.wrongs].sort(() => Math.random() - 0.5);
+        let html = `<p><b>سؤال عشوائي:</b> ${q.text}</p>`;
+        allOptions.forEach(opt => {
+            let isCorrect = (opt === q.correct);
+            html += `<button class="form-control" style="cursor:pointer; text-align:right;" onclick="checkAnswer(this, ${isCorrect})">${opt}</button>`;
+        });
+        area.innerHTML = html;
+        document.getElementById('deleteQuizBtn').style.display = 'block';
+    }
+
+    async function deleteCurrentQuiz() {
+        if(currentQuizIndex === -1) return;
+        myQuizzes.splice(currentQuizIndex, 1);
+        await writeStoredArray('studyhub:quizzes', myQuizzes);
+        currentQuizIndex = -1;
+        document.getElementById('quizArea').innerHTML = 'أضف أسئلتك بالأعلى ثم اضغط لاختبارك عشوائياً.';
+        document.getElementById('deleteQuizBtn').style.display = 'none';
+    }
+
+    function checkAnswer(btn, isCorrect) {
+        if(isCorrect) {
+            btn.style.backgroundColor = '#10b981';
+            btn.style.color = '#fff';
+            alert('إجابة صحيحة! 🌟');
+        } else {
+            btn.style.backgroundColor = '#ef4444';
+            btn.style.color = '#fff';
+            alert('إجابة خاطئة!');
+        }
+    }
+
+    // 4. متتبع الواجبات
+    let tasks = [];
+
+    async function loadTasks() {
+        tasks = await readStoredArray('studyhub:tasks');
+        renderTasks();
+    }
+
+    async function addTask() {
+        let name = document.getElementById('taskName').value;
+        let dateVal = document.getElementById('taskDate').value;
+        if(!name || !dateVal) { alert('أدخل اسم الواجب والتاريخ'); return; }
+        let targetDate = new Date(dateVal);
+        let today = new Date();
+        let diffDays = Math.ceil((targetDate - today) / (1000 * 60 * 60 * 24));
+        tasks.push({name, date: dateVal, daysLeft: diffDays});
+        await writeStoredArray('studyhub:tasks', tasks);
+        document.getElementById('taskName').value = '';
+        document.getElementById('taskDate').value = '';
+        renderTasks();
+    }
+
+    async function deleteTask(index) {
+        tasks.splice(index, 1);
+        await writeStoredArray('studyhub:tasks', tasks);
+        renderTasks();
+    }
+
+    function renderTasks() {
+        if(tasks.length === 0) {
+            document.getElementById('taskList').innerHTML = 'لم تقم بإضافة واجبات بعد.';
+            return;
+        }
+        let listHTML = "<ul>";
+        tasks.forEach((t, index) => {
+            let badgeColor = t.daysLeft < 0 ? "#ef4444" : (t.daysLeft <= 2 ? "#f59e0b" : "#10b981");
+            listHTML += `<li style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span>📌 <b>${t.name}</b> (${t.date}) - <span style="background:${badgeColor}; padding:2px 6px; border-radius:4px; color:#fff;">باقي ${t.daysLeft} يوم</span></span>
+                <button class="btn-danger-sm" onclick="deleteTask(${index})">حذف</button>
+            </li>`;
+        });
+        listHTML += "</ul>";
+        document.getElementById('taskList').innerHTML = listHTML;
+    }
+
+    // 5. القوانين والمعادلات
+    let formulas = [];
+
+    async function loadFormulas() {
+        formulas = await readStoredArray('studyhub:formulas');
+        renderFormulas();
+    }
+
+    async function addFormula() {
+        let name = document.getElementById('formName').value;
+        let when = document.getElementById('formWhen').value;
+        let isImportant = document.getElementById('formImportant').checked;
+        if(!name || !when) { alert('أدخل القانون ومتى يأتي بالامتحان'); return; }
+        formulas.push({name, when, isImportant});
+        await writeStoredArray('studyhub:formulas', formulas);
+        document.getElementById('formName').value = '';
+        document.getElementById('formWhen').value = '';
+        document.getElementById('formImportant').checked = false;
+        renderFormulas();
+    }
+
+    async function deleteFormula(index) {
+        formulas.splice(index, 1);
+        await writeStoredArray('studyhub:formulas', formulas);
+        renderFormulas();
+    }
+
+    function renderFormulas() {
+        if(formulas.length === 0) {
+            document.getElementById('formulaList').innerHTML = 'لم تقم بإضافة قوانين بعد.';
+            return;
+        }
+        let html = "<ul>";
+        formulas.forEach((f, index) => {
+            let borderStyle = f.isImportant ? "border-right: 4px solid #ef4444; padding-right: 8px;" : "";
+            html += `<li style="margin-bottom:12px; ${borderStyle}; display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>📐 <b style="color: ${f.isImportant ? '#ef4444' : '#fff'};">${f.name}</b><br><span style="color:#38bdf8;">• متى يأتي؟</span> ${f.when}</div>
+                <button class="btn-danger-sm" onclick="deleteFormula(${index})">حذف</button>
+            </li>`;
+        });
+        html += "</ul>";
+        document.getElementById('formulaList').innerHTML = html;
+    }
+
+    // 6. سجل الأخطاء المتكررة
+    let errors = [];
+
+    async function loadErrors() {
+        errors = await readStoredArray('studyhub:errors');
+        renderErrors();
+    }
+
+    async function addErrorItem() {
+        let subject = document.getElementById('errSubject').value;
+        let desc = document.getElementById('errDesc').value;
+        if(!subject || !desc) { alert('أدخل المادة وخطأك'); return; }
+        errors.push({subject, desc});
+        await writeStoredArray('studyhub:errors', errors);
+        document.getElementById('errSubject').value = '';
+        document.getElementById('errDesc').value = '';
+        renderErrors();
+    }
+
+    async function deleteError(index) {
+        errors.splice(index, 1);
+        await writeStoredArray('studyhub:errors', errors);
+        renderErrors();
+    }
+
+    function renderErrors() {
+        if(errors.length === 0) {
+            document.getElementById('errorList').innerHTML = 'لم تقم بتسجيل أخطاء بعد.';
+            return;
+        }
+        let html = "<ul>";
+        errors.forEach((e, index) => {
+            html += `<li style="margin-bottom:10px; border-right: 3px solid #ef4444; padding-right: 8px; display:flex; justify-content:space-between;">
+                <div>❌ <b>[${e.subject}]</b><br><span style="color:#f87171;">الخطأ:</span> ${e.desc}</div>
+                <button class="btn-danger-sm" onclick="deleteError(${index})">حذف</button>
+            </li>`;
+        });
+        html += "</ul>";
+        document.getElementById('errorList').innerHTML = html;
+    }
+
+    // 7. تمارين الإسقاطات
+    let savedExams = [];
+
+    function addQuestionRow() {
+        let container = document.getElementById('questionsContainer');
+        let count = container.getElementsByClassName('question-row').length + 1;
+        let div = document.createElement('div');
+        div.className = 'question-row';
+        div.innerHTML = `
+            <p style="color:#38bdf8; font-weight:bold; margin-bottom:8px;">السؤال ${count}:</p>
+            <input type="text" class="form-control q-sentence" placeholder="الجملة مع الفراغ">
+            <input type="text" class="form-control q-answer" placeholder="الكلمة الصحيحة للفراغ">
+            <input type="text" class="form-control q-clue" placeholder="الكلمة المفتاحية أو الدليل">
+        `;
+        container.appendChild(div);
+    }
+
+    async function saveCompleteExam() {
+        let title = document.getElementById('examTitle').value;
+        if(!title) { alert('أدخل اسم التمرين'); return; }
+        let rows = document.getElementsByClassName('question-row');
+        let questions = [];
+        for(let row of rows) {
+            let sentence = row.querySelector('.q-sentence').value;
+            let answer = row.querySelector('.q-answer').value;
+            let clue = row.querySelector('.q-clue').value;
+            if(sentence && answer) questions.push({sentence, answer, clue});
+        }
+        if(questions.length === 0) { alert('أدخل سؤالاً واحداً على الأقل'); return; }
+        savedExams.push({title, questions});
+        await writeStoredArray('studyhub:exams', savedExams);
+        document.getElementById('examTitle').value = '';
+        document.getElementById('questionsContainer').innerHTML = `
+            <div class="question-row">
+                <p style="color:#38bdf8; font-weight:bold; margin-bottom:8px;">السؤال 1:</p>
+                <input type="text" class="form-control q-sentence" placeholder="الجملة مع الفراغ">
+                <input type="text" class="form-control q-answer" placeholder="الكلمة الصحيحة للفراغ">
+                <input type="text" class="form-control q-clue" placeholder="الكلمة المفتاحية أو الدليل">
+            </div>
+        `;
+        renderExamsList();
+    }
+
+    async function loadExams() {
+        savedExams = await readStoredArray('studyhub:exams');
+        renderExamsList();
+    }
+
+    async function deleteExam(index) {
+        savedExams.splice(index, 1);
+        await writeStoredArray('studyhub:exams', savedExams);
+        renderExamsList();
+        document.getElementById('examActiveArea').innerHTML = '';
+    }
+
+    function renderExamsList() {
+        let listContainer = document.getElementById('examsList');
+        if(savedExams.length === 0) { listContainer.innerHTML = 'لا توجد تمارين محفوظة.'; return; }
+        let html = "<ul>";
+        savedExams.forEach((exam, index) => {
+            html += `<li style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; background:#061a18; padding:8px; border-radius:6px;">
+                <span style="cursor:pointer; color:#38bdf8; font-weight:bold;" onclick="startExam(${index})">👉 ${exam.title} (${exam.questions.length} أسئلة)</span>
+                <button class="btn-danger-sm" onclick="deleteExam(${index})">حذف</button>
+            </li>`;
+        });
+        html += "</ul>";
+        listContainer.innerHTML = html;
+    }
+
+    function startExam(index) {
+        let exam = savedExams[index];
+        let area = document.getElementById('examActiveArea');
+        let wordsBank = exam.questions.map(q => q.answer).sort(() => Math.random() - 0.5);
+        let html = `<div style="background:#051614; border: 2px solid #10b981; padding:15px; border-radius:10px;">
+            <h4 style="color:#10b981; margin-bottom:10px;">📝 اختبار: ${exam.title}</h4>
+            <div class="word-bank">`;
+        wordsBank.forEach(w => { html += `<span class="word-chip">${w}</span>`; });
+        html += `</div>`;
+        exam.questions.forEach((item, qIndex) => {
+            html += `<div style="margin-bottom:12px; background:#061a18; padding:10px; border-radius:6px;">
+                <p><b>${qIndex + 1}.</b> ${item.sentence}</p>
+                ${item.clue ? `<p style="font-size:12px; color:#f59e0b;">💡 الدليل: <b>${item.clue}</b></p>` : ''}
+                <select id="user_ans_${index}_${qIndex}" class="form-control"><option value="">-- اختر الكلمة --</option>`;
+            wordsBank.forEach(w => { html += `<option value="${w}">${w}</option>`; });
+            html += `</select></div>`;
+        });
+        html += `<button class="btn-action btn-success" onclick="checkExamResults(${index})">تصحيح الإجابات 🎯</button></div>`;
+        area.innerHTML = html;
+    }
+
+    function checkExamResults(examIndex) {
+        let exam = savedExams[examIndex];
+        let score = 0;
+        exam.questions.forEach((item, qIndex) => {
+            let selectElem = document.getElementById(`user_ans_${examIndex}_${qIndex}`);
+            if(selectElem && selectElem.value === item.answer) {
+                score++;
+                selectElem.style.borderColor = '#10b981';
+            } else if(selectElem) {
+                selectElem.style.borderColor = '#ef4444';
+            }
+        });
+        alert(`نتيجة الامتحان: ${score} من ${exam.questions.length}`);
+    }
+
+    // 8. المهام اليومية
+    let dailyTasks = [];
+
+    async function loadDailyTasks() {
+        dailyTasks = await readStoredArray('studyhub:dailyTasks');
+        renderDailyTasks();
+    }
+
+    async function addDailyTask() {
+        let text = document.getElementById('dailyTaskInput').value;
+        if(!text) return;
+        dailyTasks.push({text, completed: false});
+        await writeStoredArray('studyhub:dailyTasks', dailyTasks);
+        document.getElementById('dailyTaskInput').value = '';
+        renderDailyTasks();
+    }
+
+    async function toggleDailyTask(index) {
+        dailyTasks[index].completed = !dailyTasks[index].completed;
+        await writeStoredArray('studyhub:dailyTasks', dailyTasks);
+        renderDailyTasks();
+    }
+
+    async function deleteDailyTask(index) {
+        dailyTasks.splice(index, 1);
+        await writeStoredArray('studyhub:dailyTasks', dailyTasks);
+        renderDailyTasks();
+    }
+
+    function renderDailyTasks() {
+        let container = document.getElementById('dailyTaskList');
+        if(dailyTasks.length === 0) { container.innerHTML = 'لا توجد مهام لليوم.'; return; }
+        let html = "<ul>";
+        dailyTasks.forEach((task, index) => {
+            html += `<li class="task-item ${task.completed ? "completed" : ""}">
+                <span style="cursor:pointer;" onclick="toggleDailyTask(${index})">${task.completed ? "✅" : "⬜"} <b>${task.text}</b></span>
+                <button class="btn-danger-sm" onclick="deleteDailyTask(${index})">حذف</button>
+            </li>`;
+        });
+        html += "</ul>";
+        container.innerHTML = html;
+    }
+
+    // 9. بنك المصطلحات والمعاني
+    let myTerms = [];
+
+    async function loadTerms() {
+        myTerms = await readStoredArray('studyhub:terms');
+        renderTerms();
+    }
+
+    async function addTerm() {
+        let subject = document.getElementById('termSubject').value;
+        let word = document.getElementById('termWord').value;
+        let meaning = document.getElementById('termMeaning').value;
+        if(!subject || !word || !meaning) { alert('يرجى ملء كافة الخانات للمصطلح'); return; }
+        myTerms.push({subject, word, meaning});
+        await writeStoredArray('studyhub:terms', myTerms);
+        document.getElementById('termWord').value = '';
+        document.getElementById('termMeaning').value = '';
+        renderTerms();
+        alert('تم حفظ المصطلح بنجاح!');
+    }
+
+    async function deleteTerm(index) {
+        myTerms.splice(index, 1);
+        await writeStoredArray('studyhub:terms', myTerms);
+        renderTerms();
+    }
+
+    function renderTerms() {
+        let container = document.getElementById('termsList');
+        let filter = document.getElementById('searchTermInput').value.toLowerCase();
+        let filtered = myTerms.filter(t => t.word.toLowerCase().includes(filter) || t.meaning.toLowerCase().includes(filter) || t.subject.toLowerCase().includes(filter));
+
+        if(myTerms.length === 0) { container.innerHTML = 'لم تقم بإضافة أي مصطلحات بعد.'; return; }
+        if(filtered.length === 0) { container.innerHTML = 'لا توجد مصطلحات مطابقة للبحث.'; return; }
+        let html = "<ul>";
+        filtered.forEach((t) => {
+            let realIndex = myTerms.indexOf(t);
+            html += `<li style="margin-bottom:8px; background:#061a18; padding:10px; border-radius:6px; border:1px solid #10b981; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <span style="background:#0ea5e9; font-size:11px; padding:2px 6px; border-radius:4px; color:#fff;">${t.subject}</span>
+                    <b style="color:#38bdf8; font-size:15px; margin-right:8px;">${t.word}</b> : <span>${t.meaning}</span>
+                </div>
+                <button class="btn-danger-sm" onclick="deleteTerm(${realIndex})">حذف</button>
+            </li>`;
+        });
+        html += "</ul>";
+        container.innerHTML = html;
+    }
+
+    // 10. جدول اليوم
+    const SCHEDULE_DAYS = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس'];
+    let todaySchedule = {};       // { 'الأحد': ['رياضيات', ...], ... }
+    let scheduleViewDayIndex = 0; // index within SCHEDULE_DAYS currently shown
+    let scheduleEditDayIndex = 0; // index within SCHEDULE_DAYS being edited
+    let scheduleNotifiedDate = null; // date string of the last day we already notified for
+
+    function todayJsDayIndex() {
+        return new Date().getDay(); // 0=Sunday ... 6=Saturday
+    }
+
+    // Returns the index (0-4) into SCHEDULE_DAYS that corresponds to "today".
+    // Friday/Saturday (5,6) aren't in the schedule, so default to Sunday (0).
+    function currentScheduleDayIndex() {
+        let jsDay = todayJsDayIndex();
+        return (jsDay >= 0 && jsDay <= 4) ? jsDay : 0;
+    }
+
+    function scheduleHasAnyData() {
+        return SCHEDULE_DAYS.some(d => Array.isArray(todaySchedule[d]) && todaySchedule[d].length > 0);
+    }
+
+    async function loadTodaySchedule() {
+        let stored = await readStoredArray('studyhub:todaySchedule');
+        todaySchedule = (stored && typeof stored === 'object' && !Array.isArray(stored)) ? stored : {};
+        SCHEDULE_DAYS.forEach(d => { if (!Array.isArray(todaySchedule[d])) todaySchedule[d] = []; });
+        scheduleNotifiedDate = localStorage.getItem('studyhub:scheduleNotifiedDate');
+    }
+
+    async function saveTodaySchedule() {
+        await writeStoredArray('studyhub:todaySchedule', todaySchedule);
+    }
+
+    // Called from the "جدول اليوم" menu card
+    function openTodaySchedule() {
+        if (!scheduleHasAnyData()) {
+            openSection(9);
+            // أول مرة يدخل فيها المستخدم للقسم: ابدأ مباشرة بوضع التعديل
+            enterScheduleEditMode();
+        } else {
+            scheduleViewDayIndex = currentScheduleDayIndex();
+            openSection(9);
+            renderScheduleView();
+            document.getElementById('scheduleViewMode').style.display = 'block';
+            document.getElementById('scheduleEditMode').style.display = 'none';
+        }
+    }
+
+    function renderDayTabs(containerId, activeIndex, onClickFnName) {
+        let container = document.getElementById(containerId);
+        let html = '';
+        SCHEDULE_DAYS.forEach((day, i) => {
+            html += `<button class="day-tab-btn ${i === activeIndex ? 'active' : ''}" onclick="${onClickFnName}(${i})">${day}</button>`;
+        });
+        container.innerHTML = html;
+    }
+
+    function renderScheduleView() {
+        renderDayTabs('dayTabs', scheduleViewDayIndex, 'jumpToScheduleDay');
+
+        let day = SCHEDULE_DAYS[scheduleViewDayIndex];
+        let isActualToday = (scheduleViewDayIndex === currentScheduleDayIndex()) && (todayJsDayIndex() <= 4);
+        document.getElementById('currentDayBadge').textContent = isActualToday ? `📌 جدول اليوم - ${day}` : `📅 جدول يوم ${day}`;
+
+        let subjects = todaySchedule[day] || [];
+        let listContainer = document.getElementById('todayScheduleList');
+        if (subjects.length === 0) {
+            listContainer.innerHTML = `<p class="empty-day-msg">لا توجد حصص مضافة ليوم ${day} بعد. اضغط "تعديل الجدول" لإضافتها.</p>`;
+            return;
+        }
+        let html = '<ol>';
+        subjects.forEach(subject => {
+            html += `<li class="schedule-subject-row">${escapeHtml(subject)}</li>`;
+        });
+        html += '</ol>';
+        listContainer.innerHTML = html;
+    }
+
+    function jumpToScheduleDay(index) {
+        scheduleViewDayIndex = index;
+        renderScheduleView();
+        saveLastAppState();
+    }
+
+    function navigateScheduleDay(direction) {
+        scheduleViewDayIndex = (scheduleViewDayIndex + direction + SCHEDULE_DAYS.length) % SCHEDULE_DAYS.length;
+        renderScheduleView();
+        saveLastAppState();
+    }
+
+    function enterScheduleEditMode() {
+        scheduleEditDayIndex = scheduleViewDayIndex || 0;
+        document.getElementById('scheduleViewMode').style.display = 'none';
+        document.getElementById('scheduleEditMode').style.display = 'block';
+        renderDayTabs('editDayTabs', scheduleEditDayIndex, 'switchScheduleEditDay');
+        renderScheduleEditContent();
+    }
+
+    function switchScheduleEditDay(index) {
+        scheduleEditDayIndex = index;
+        renderDayTabs('editDayTabs', scheduleEditDayIndex, 'switchScheduleEditDay');
+        renderScheduleEditContent();
+    }
+
+    function renderScheduleEditContent() {
+        let day = SCHEDULE_DAYS[scheduleEditDayIndex];
+        let subjects = todaySchedule[day] || [];
+        let container = document.getElementById('editDayContent');
+
+        let html = `<h4 style="color:#38bdf8; font-size:15px; margin-bottom:10px;">حصص يوم ${day}:</h4>`;
+        if (subjects.length === 0) {
+            html += `<p class="empty-day-msg">لا توجد حصص بعد. أضف أول حصة بالأسفل.</p>`;
+        } else {
+            subjects.forEach((subject, i) => {
+                html += `<div class="subject-edit-row">
+                    <button class="btn-icon-sm" onclick="moveScheduleSubject(${i}, -1)" title="تحريك للأعلى">⬆️</button>
+                    <button class="btn-icon-sm" onclick="moveScheduleSubject(${i}, 1)" title="تحريك للأسفل">⬇️</button>
+                    <input type="text" class="form-control" value="${escapeHtml(subject)}" onchange="renameScheduleSubject(${i}, this.value)">
+                    <button class="btn-icon-sm" style="color:#ef4444;" onclick="removeScheduleSubject(${i})" title="حذف">🗑️</button>
+                </div>`;
+            });
+        }
+        html += `<div class="subject-edit-row" style="margin-top:12px;">
+            <input type="text" class="form-control" id="newSubjectInput" placeholder="اسم المادة (مثال: رياضيات)" onkeydown="if(event.key==='Enter'){addScheduleSubject();}">
+            <button class="btn-action" onclick="addScheduleSubject()">➕ إضافة</button>
+        </div>`;
+        container.innerHTML = html;
+    }
+
+    function addScheduleSubject() {
+        let input = document.getElementById('newSubjectInput');
+        let value = input.value.trim();
+        if (!value) return;
+        let day = SCHEDULE_DAYS[scheduleEditDayIndex];
+        if (!Array.isArray(todaySchedule[day])) todaySchedule[day] = [];
+        todaySchedule[day].push(value);
+        input.value = '';
+        renderScheduleEditContent();
+    }
+
+    function renameScheduleSubject(index, newValue) {
+        let day = SCHEDULE_DAYS[scheduleEditDayIndex];
+        newValue = newValue.trim();
+        if (!newValue) { renderScheduleEditContent(); return; }
+        todaySchedule[day][index] = newValue;
+    }
+
+    function removeScheduleSubject(index) {
+        let day = SCHEDULE_DAYS[scheduleEditDayIndex];
+        todaySchedule[day].splice(index, 1);
+        renderScheduleEditContent();
+    }
+
+    function moveScheduleSubject(index, direction) {
+        let day = SCHEDULE_DAYS[scheduleEditDayIndex];
+        let subjects = todaySchedule[day];
+        let newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= subjects.length) return;
+        [subjects[index], subjects[newIndex]] = [subjects[newIndex], subjects[index]];
+        renderScheduleEditContent();
+    }
+
+    async function finishScheduleEdit() {
+        await saveTodaySchedule();
+        scheduleViewDayIndex = currentScheduleDayIndex();
+        document.getElementById('scheduleEditMode').style.display = 'none';
+        document.getElementById('scheduleViewMode').style.display = 'block';
+        renderScheduleView();
+        saveLastAppState();
+    }
+
+    // ===== إشعارات جدول الغد (الساعة 5:00 مساءً) =====
+    function enableScheduleNotifications() {
+        if (!('Notification' in window)) {
+            alert('متصفحك لا يدعم الإشعارات.');
+            return;
+        }
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                alert('تم تفعيل التذكير! سيصلك إشعار الساعة 5:00 مساءً بجدول الغد طالما المتصفح مفتوح.');
+            } else {
+                alert('لم يتم منح إذن الإشعارات.');
+            }
+        });
+    }
+
+    function startScheduleNotificationWatcher() {
+        // يفحص كل دقيقة إن كانت الساعة 5:00 مساءً ولم يتم إرسال إشعار اليوم بعد
+        setInterval(checkAndSendScheduleNotification, 60 * 1000);
+        checkAndSendScheduleNotification();
+    }
+
+    function checkAndSendScheduleNotification() {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+        let now = new Date();
+        let todayKey = now.toDateString();
+        if (now.getHours() !== 17 || now.getMinutes() !== 0) return;
+        if (scheduleNotifiedDate === todayKey) return;
+
+        let tomorrowJsDay = (now.getDay() + 1) % 7;
+        if (tomorrowJsDay < 0 || tomorrowJsDay > 4) {
+            // الغد ليس يوم دوام (جمعة/سبت) - لا يوجد جدول لإرساله
+            scheduleNotifiedDate = todayKey;
+            localStorage.setItem('studyhub:scheduleNotifiedDate', todayKey);
+            return;
+        }
+
+        let tomorrowDayName = SCHEDULE_DAYS[tomorrowJsDay];
+        let subjects = todaySchedule[tomorrowDayName] || [];
+
+        scheduleNotifiedDate = todayKey;
+        localStorage.setItem('studyhub:scheduleNotifiedDate', todayKey);
+
+        if (subjects.length === 0) return; // لا ترسل إشعاراً فارغاً
+
+        new Notification('جدولك لباجر 📚', {
+            body: subjects.join('\n'),
+            icon: undefined
+        });
+    }
+
+</script>
+
+<!-- ============================================================
+     تكامل تطبيق Android (Capacitor) — لا يغيّر أي وظيفة موجودة أعلاه
+     يعمل فقط عند التشغيل داخل تطبيق Android الحقيقي، ولا يؤثر إطلاقاً
+     عند فتح نفس الملف من متصفح عادي أثناء التطوير.
+     ============================================================ -->
+<script>
+(function () {
+    function whenCapacitorReady(cb) {
+        if (window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) {
+            cb();
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        whenCapacitorReady(function () {
+            var P = window.Capacitor.Plugins || {};
+
+            // 1) إخفاء شاشة البداية (Splash) بعد اكتمال تحميل الواجهة
+            try {
+                if (P.SplashScreen) {
+                    setTimeout(function () { P.SplashScreen.hide(); }, 300);
+                }
+            } catch (e) {}
+
+            // 2) تلوين شريط الحالة العلوي بما يطابق هوية التطبيق
+            try {
+                if (P.StatusBar) {
+                    P.StatusBar.setBackgroundColor({ color: '#047857' });
+                    P.StatusBar.setStyle({ style: 'DARK' });
+                }
+            } catch (e) {}
+
+            // 3) منع فتح أي رابط خارجي داخل التطبيق نفسه:
+            //    أي رابط http/https يُفتح، يُحوَّل لمتصفح النظام الخارجي بدل شاشة التطبيق
+            try {
+                document.addEventListener('click', function (e) {
+                    var a = e.target.closest && e.target.closest('a[href]');
+                    if (!a) return;
+                    var href = a.getAttribute('href') || '';
+                    if (/^https?:\/\//i.test(href)) {
+                        e.preventDefault();
+                        if (P.Browser) { P.Browser.open({ url: href }); }
+                    }
+                }, true);
+
+                var nativeOpen = window.open;
+                window.open = function (url) {
+                    if (url && /^https?:\/\//i.test(url) && P.Browser) {
+                        P.Browser.open({ url: url });
+                        return null;
+                    }
+                    return nativeOpen.apply(window, arguments);
+                };
+            } catch (e) {}
+
+            // 4) زر الرجوع الفعلي في أندرويد:
+            //    داخل أي قسم -> يرجع للواجهة الرئيسية. في الواجهة الرئيسية -> يغلق التطبيق.
+            try {
+                if (P.App) {
+                    P.App.addListener('backButton', function () {
+                        var sectionView = document.getElementById('sectionView');
+                        var isSectionOpen = sectionView && sectionView.style.display === 'block';
+                        if (isSectionOpen && typeof goHome === 'function') {
+                            goHome();
+                        } else {
+                            P.App.exitApp();
+                        }
+                    });
+                }
+            } catch (e) {}
+        });
+    });
+})();
+</script>
+
+</body>
+</html>
